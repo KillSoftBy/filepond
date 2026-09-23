@@ -114,6 +114,7 @@ document.addEventListener('alpine:init', () => {
                 }),
                 ...(existingFiles.length && { files: existingFiles }),
                 allowMultiple: this.multiple,
+                allowReorder: this.multiple && dataset.allowReorder === 'true',
                 // Preview sizes
                 imagePreviewHeight: dataset.previewHeight ? parseInt(dataset.previewHeight) : 100,
                 imagePreviewMinHeight: dataset.previewMinHeight ? parseInt(dataset.previewMinHeight) : 44,
@@ -203,4 +204,3 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 })
-

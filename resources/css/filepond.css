@@ -247,24 +247,22 @@
 /* Grid layout for multiple files */
 .filepond--grid .filepond--list-scroller {
     overflow: visible;
-    margin-block: 0;
-}
-
-.filepond--grid .filepond--list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    padding: 0.5rem;
 }
 
 .filepond--grid .filepond--item {
-    flex-shrink: 0;
+    width: calc(50% - 0.75rem);
 }
 
-/* File poster wrapper styling */
-.filepond--file-poster-wrapper {
-    border-radius: var(--radius-lg);
-    overflow: hidden;
+@media (min-width: 64rem) {
+    .filepond--grid .filepond--item {
+        width: calc(33.333333% - 0.75rem);
+    }
+}
+
+@media (max-width: 40rem) {
+    .filepond--grid .filepond--item {
+        width: calc(100% - 0.5rem);
+    }
 }
 
 .filepond--root.filepond--hopper:has(.filepond--list:not(:empty)) .filepond--panel-root {
