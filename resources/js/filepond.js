@@ -115,6 +115,15 @@ document.addEventListener('alpine:init', () => {
                 ? createMarkerEditor({ labels })
                 : null;
 
+            // local items carry no Blob — resolve the poster URL for the editor
+            if (imageEditor) {
+                const rawOpen = imageEditor.open.bind(imageEditor);
+                imageEditor.open = (file, params) => {
+                    const item = this.pond?.getFiles().find((i) => i.file === file);
+                    rawOpen(file, params, item?.getMetadata('poster') || null);
+                };
+            }
+
             const options = {
                 ...dataset,
                 ...labels,

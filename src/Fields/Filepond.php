@@ -347,6 +347,7 @@ class Filepond extends Field
                     'file' => [
                         'name' => \call_user_func($this->resolveNames(), basename($file), $index, $this),
                         'size' => Storage::disk($disk)->size($file),
+                        'type' => Storage::disk($disk)->mimeType($file),
                     ],
                     'metadata' => [
                         'poster' => $this->getStorageUrl($file),

@@ -355,10 +355,22 @@
     height: 100%;
 }
 
+/* Edit button: image-edit plugin only reveals it on DID_IMAGE_PREVIEW_SHOW,
+   which never fires for local items (they render a poster) — show always,
+   the button is only created for previewable images anyway */
+.filepond--action-edit-item {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* File poster: fill the whole item instead of letterboxing */
+.filepond--file-poster img {
+    width: 100%;
+    object-fit: cover;
+}
+
 /* Zoom action button */
 .filepond--action-zoom-item.filepond--action-zoom-item {
-    width: 2em;
-    height: 2em;
     padding: 0.1875em;
 }
 

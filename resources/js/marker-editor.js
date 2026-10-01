@@ -72,11 +72,16 @@ export function createMarkerEditor({ labels = {} } = {}) {
     };
 
     const api = {
-        open(file, imageParameters) {
+        open(file, imageParameters, sourceUrl = null) {
             ensureDom();
             currentFile = file;
 
-            objectUrl = URL.createObjectURL(file);
+            // `local` items have no Blob payload — edit the poster URL instead
+            let src = sourceUrl;
+            if (!src) {
+                objectUrl = URL.createObjectURL(file);
+                src = objectUrl;
+            }
             targetImg = new Image();
             targetImg.onload = () => {
                 editor = new AnnotationEditor();
@@ -106,7 +111,7 @@ export function createMarkerEditor({ labels = {} } = {}) {
                 api.oncancel?.();
                 api.close();
             };
-            targetImg.src = objectUrl;
+            targetImg.src = src;
         },
 
         async save(detail) {
