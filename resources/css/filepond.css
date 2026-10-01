@@ -193,6 +193,32 @@
 /* Drag over state */
 .filepond--root[data-style-panel-layout~='circle'] .filepond--panel-root {
     border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Avatar mode: circular single-file uploader */
+.filepond--avatar {
+    max-width: 14rem;
+}
+
+.filepond--avatar .filepond--panel-root,
+.filepond--root[data-style-panel-layout~='circle'] .filepond--item-panel {
+    border-radius: 50%;
+}
+
+.filepond--avatar .filepond--image-preview-wrapper,
+.filepond--avatar .filepond--file-poster-wrapper {
+    border-radius: 50%;
+}
+
+/* In circle layout all action buttons anchor at bottom-center —
+   spread zoom | edit | remove symmetrically */
+.filepond--avatar .filepond--action-zoom-item {
+    margin-left: -2.75em;
+}
+
+.filepond--avatar .filepond--action-remove-item {
+    margin-left: 2.75em;
 }
 
 /* Focus state */
@@ -267,4 +293,116 @@
 
 .filepond--root.filepond--hopper:has(.filepond--list:not(:empty)) .filepond--panel-root {
     padding-block-end: var(--filepond-container-padding-bottom);
+}
+
+/* Image editor modal (marker.js 3) */
+.filepond-editor-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(0 0 0 / 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.filepond-editor-overlay[hidden] {
+    display: none;
+}
+
+.filepond-editor {
+    display: flex;
+    flex-direction: column;
+    width: min(90vw, 72rem);
+    height: min(90vh, 48rem);
+    border-radius: var(--radius-lg, 0.5rem);
+    background-color: var(--color-base, #1e293b);
+    border: 1px solid var(--color-base-stroke, #334155);
+    overflow: hidden;
+}
+
+.filepond-editor-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: calc(var(--spacing, 0.25rem) * 3) calc(var(--spacing, 0.25rem) * 4);
+    border-bottom: 1px solid var(--color-base-stroke, #334155);
+}
+
+.filepond-editor-cancel {
+    padding: calc(var(--spacing, 0.25rem) * 1.5) calc(var(--spacing, 0.25rem) * 4);
+    border-radius: var(--radius-md, 0.375rem);
+    background-color: var(--color-base-300, #334155);
+    color: var(--color-base-text, #e2e8f0);
+    font-size: var(--text-sm, 0.875rem);
+    cursor: pointer;
+    border: none;
+}
+
+.filepond-editor-cancel:hover {
+    background-color: var(--color-base-400, #475569);
+}
+
+.filepond-editor-body {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+}
+
+.filepond-editor-body > markerjs-ui-annotation-editor {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* Zoom action button */
+.filepond--action-zoom-item.filepond--action-zoom-item {
+    width: 2em;
+    height: 2em;
+    padding: 0.1875em;
+}
+
+/* Lightbox overlay */
+.filepond-zoom-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgb(0 0 0 / 0.85);
+    cursor: zoom-out;
+}
+
+.filepond-zoom-overlay[hidden] {
+    display: none;
+}
+
+.filepond-zoom-image {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    border-radius: var(--radius-lg, 0.5rem);
+    box-shadow: 0 1.5rem 4rem rgb(0 0 0 / 0.5);
+}
+
+.filepond-zoom-close {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    z-index: 1;
+    padding: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    border-radius: 50%;
+    background-color: rgb(255 255 255 / 0.12);
+    color: #fff;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.filepond-zoom-close:hover {
+    background-color: rgb(255 255 255 / 0.25);
 }

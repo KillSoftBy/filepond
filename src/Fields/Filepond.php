@@ -43,6 +43,16 @@ class Filepond extends Field
 
     protected bool $gridLayout = true;
 
+    protected bool $imageEdit = false;
+
+    protected bool $imageEditInstant = false;
+
+    protected bool $zoomable = true;
+
+    protected bool $isAvatar = false;
+
+    protected int $gridColumns = 3;
+
     protected function assets(): array
     {
         return [
@@ -76,6 +86,53 @@ class Filepond extends Field
     public function compact(): static
     {
         $this->isCompact = true;
+
+        return $this;
+    }
+
+    /**
+     * Enable image annotation editor (marker.js 3).
+     *
+     * @param bool $instant Open the editor immediately when an image is added
+     *                      (before upload) instead of only via the edit button.
+     */
+    public function imageEdit(bool $instant = false): static
+    {
+        $this->imageEdit = true;
+        $this->imageEditInstant = $instant;
+
+        return $this;
+    }
+
+    /**
+     * Circular avatar layout for a single image (compact circle panel,
+     * action buttons along the bottom edge, 1:1 crop hint).
+     * Has no effect in multiple mode.
+     */
+    public function avatar(): static
+    {
+        $this->isAvatar = true;
+
+        return $this;
+    }
+
+    /**
+     * Toggle the zoom (magnifier) button on image items.
+     * Opens a fullscreen preview lightbox. Enabled by default.
+     */
+    public function zoomable(bool $enabled = true): static
+    {
+        $this->zoomable = $enabled;
+
+        return $this;
+    }
+
+    /**
+     * Number of columns in the grid layout on wide screens (default: 3)
+     */
+    public function gridColumns(int $count): static
+    {
+        $this->gridColumns = max(1, $count);
 
         return $this;
     }
@@ -219,10 +276,15 @@ class Filepond extends Field
             'data-poster-height' => $this->itemHeight,
             'data-panel-aspect-ratio' => $this->panelAspectRatio,
             'data-compact' => $this->isCompact ? 'true' : null,
+            'data-avatar' => $this->isAvatar ? 'true' : null,
             'data-allow-remove' => $this->isRemovable() ? 'true' : 'false',
             'data-allow-reorder' => 'true',
             'data-allow-revert' => 'false',
             'data-grid' => $this->gridLayout ? 'true' : null,
+            'data-image-edit' => $this->imageEdit ? 'true' : null,
+            'data-image-edit-instant' => $this->imageEditInstant ? 'true' : null,
+            'data-zoom' => $this->zoomable ? 'true' : 'false',
+            'data-columns' => $this->gridLayout ? (string) $this->gridColumns : null,
         ];
 
         $files = $this->getFilepondFormattedFiles();

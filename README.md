@@ -18,7 +18,10 @@ A modern file upload field for [MoonShine](https://github.com/moonshine-software
 - Image previews with customizable dimensions
 - Multiple file uploads with grid layout
 - File reordering via drag and drop
+- Fullscreen image preview lightbox (zoom button on every image item)
+- Configurable grid columns for multiple uploads
 - File type validation
+- Built-in image annotation editor (draw, highlight, arrows — powered by [marker.js 3](https://markerjs.com))
 - Localization support (EN, RU)
 - Seamless integration with MoonShine v4+
 
@@ -104,12 +107,44 @@ Filepond::make('Image')
 
 ### Grid Layout
 
+Grid layout is enabled by default for multiple uploads: items render 2 per row on medium screens and 3 per row on wide screens.
+
+Change the number of columns on wide screens:
+
+```php
+Filepond::make('Gallery', 'images')
+    ->multiple()
+    ->gridColumns(4);
+```
+
 To disable grid layout and stack items vertically:
 
 ```php
 Filepond::make('Files')
     ->multiple()
     ->vertical();
+```
+
+### Avatar Mode
+
+Circular compact uploader for profile photos (single file only — ignored in `multiple()` mode). The panel becomes a circle, action buttons sit along its bottom edge:
+
+```php
+Filepond::make('Avatar', 'avatar')
+    ->acceptExtensions('jpg', 'jpeg', 'png', 'webp')
+    ->avatar();
+```
+
+Combines well with `imageEdit()` — the annotation editor opens in a modal and crop defaults to 1:1.
+
+### Image Preview Lightbox
+
+Every image item gets a magnifier button that opens the image fullscreen in a lightbox (click or `Esc` to close). Works both for new uploads and already-uploaded files. Enabled by default — to disable:
+
+```php
+Filepond::make('Gallery', 'images')
+    ->multiple()
+    ->zoomable(false);
 ```
 
 ### Aspect Ratio
@@ -129,6 +164,29 @@ Enable compact layout where the preview replaces the drop area:
 Filepond::make('Thumbnail')
     ->compact();
 ```
+
+### Image Annotation Editor
+
+Enable the built-in [marker.js 3](https://markerjs.com) editor so users can annotate images (draw, highlight areas, arrows, text, blur) before upload:
+
+```php
+Filepond::make('Screenshot', 'screenshot')
+    ->disk('public')
+    ->dir('screenshots')
+    ->acceptExtensions('jpg', 'jpeg', 'png', 'webp')
+    ->imageEdit();
+```
+
+An "edit" button appears on every image preview item. The annotated image is rendered and uploaded instead of the original.
+
+To open the editor automatically as soon as an image is added (before it uploads), pass `true`:
+
+```php
+Filepond::make('Screenshot', 'screenshot')
+    ->imageEdit(instant: true);
+```
+
+> **Note:** marker.js 3 is released under the *linkware* license — it is free to use, but a small logo is shown in the editor corner. Commercial licenses to remove it are available at [markerjs.com](https://markerjs.com).
 
 ## Complete Example
 

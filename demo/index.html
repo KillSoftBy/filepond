@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="demo-token">
+    <title>Filepond + marker.js demo</title>
+    <link rel="stylesheet" href="/dist/filepond.css">
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            max-width: 60rem;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        h1 { font-size: 1.25rem; }
+        section { margin-block: 2rem; }
+        code { color: #93c5fd; }
+    </style>
+</head>
+<body>
+    <h1>FilePond + marker.js 3 — демо</h1>
+
+    <section>
+        <h2>Instant edit (редактор открывается сразу)</h2>
+        <div x-data="filepond()" class="filepond-wrapper">
+            <template x-for="file in files" :key="file">
+                <input type="hidden" name="screenshot" :value="file" />
+            </template>
+            <input
+                type="file"
+                x-ref="input"
+                data-server="/upload"
+                data-image-edit="true"
+                data-image-edit-instant="true"
+                data-extensions=".jpg,.jpeg,.png,.webp"
+                data-labels='{"labelIdle":"Перетащите фото или выберите файл"}'
+                data-preview-height="150"
+            />
+        </div>
+    </section>
+
+    <section>
+        <h2>Редактирование по кнопке + multiple</h2>
+        <div x-data="filepond()" class="filepond-wrapper">
+            <template x-for="file in files" :key="file">
+                <input type="hidden" name="gallery[]" :value="file" />
+            </template>
+            <input
+                type="file"
+                x-ref="input"
+                multiple
+                data-server="/upload"
+                data-image-edit="true"
+                data-extensions=".jpg,.jpeg,.png,.webp"
+                data-labels='{"labelIdle":"Перетащите фото или выберите файлы"}'
+                data-preview-height="120"
+                data-grid="true"
+                data-allow-reorder="true"
+            />
+        </div>
+    </section>
+
+    <section>
+        <h2>Avatar (круг)</h2>
+        <div x-data="filepond()" class="filepond-wrapper">
+            <template x-for="file in files" :key="file">
+                <input type="hidden" name="avatar" :value="file" />
+            </template>
+            <input
+                type="file"
+                x-ref="input"
+                data-server="/upload"
+                data-avatar="true"
+                data-image-edit="true"
+                data-extensions=".jpg,.jpeg,.png,.webp"
+                data-labels='{"labelIdle":"Выберите фото"}'
+                data-preview-height="170"
+            />
+        </div>
+    </section>
+
+    <script src="/dist/filepond.js"></script>
+    <script defer src="/node_modules/alpinejs/dist/cdn.min.js"></script>
+</body>
+</html>

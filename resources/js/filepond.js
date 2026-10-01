@@ -4,6 +4,9 @@ import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
 import FilePondPluginFilePoster from 'filepond-plugin-file-poster';
 import FilePondPluginImageCrop from 'filepond-plugin-image-crop';
+import FilePondPluginImageEdit from 'filepond-plugin-image-edit';
+import { FilePondPluginItemZoom } from './item-zoom.js';
+import { createMarkerEditor } from './marker-editor.js';
 
 const extensionToMime = {
     '.jpg': 'image/jpeg',
@@ -67,7 +70,9 @@ document.addEventListener('alpine:init', () => {
         FilePondPluginImagePreview,
         FilePondPluginFileValidateType,
         FilePondPluginFilePoster,
-        FilePondPluginImageCrop
+        FilePondPluginImageCrop,
+        FilePondPluginImageEdit,
+        FilePondPluginItemZoom
     );
 
     Alpine.data('filepond', () => ({
@@ -105,6 +110,11 @@ document.addEventListener('alpine:init', () => {
 
             const serverUrl = dataset.server || '/upload';
 
+            // Image editor (marker.js 3 via filepond-plugin-image-edit)
+            const imageEditor = dataset.imageEdit === 'true'
+                ? createMarkerEditor({ labels })
+                : null;
+
             const options = {
                 ...dataset,
                 ...labels,
@@ -123,16 +133,65 @@ document.addEventListener('alpine:init', () => {
                 // Panel layout (aspectRatio only for single file mode)
                 ...(!this.multiple && dataset.panelAspectRatio && { stylePanelAspectRatio: dataset.panelAspectRatio }),
                 ...(dataset.compact === 'true' && { stylePanelLayout: 'compact' }),
+                // Avatar mode: circular single-file uploader (buttons along the bottom edge)
+                ...(dataset.avatar === 'true' && !this.multiple && {
+                    stylePanelLayout: 'compact circle',
+                    styleButtonRemoveItemPosition: 'bottom center',
+                    styleButtonProcessItemPosition: 'right bottom',
+                    styleProgressIndicatorPosition: 'right bottom',
+                    styleLoadIndicatorPosition: 'center bottom',
+                    styleImageZoomButtonItemPosition: 'bottom center',
+                    imageCropAspectRatio: '1:1',
+                }),
+                // Zoom/lightbox button on image items (default on, disable with data-zoom="false")
+                allowImageZoom: dataset.zoom !== 'false',
+                ...(imageEditor && {
+                    allowImageEdit: true,
+                    imageEditAllowEdit: true,
+                    imageEditInstantEdit: dataset.imageEditInstant === 'true',
+                    imageEditEditor: imageEditor,
+                }),
                 server: {
-                    process: {
-                        url: serverUrl,
-                        headers: {
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
-                        },
-                        onload: (response) => {
-                            const data = JSON.parse(response);
-                            return data.path;
-                        },
+                    process: (fieldName, file, metadata, load, error, progress, abort) => {
+                        // upload the annotated image instead of the original
+                        const uploadFile = imageEditor?.getEditedFile(file) || file;
+
+                        const data = new FormData();
+                        data.append(fieldName, uploadFile, uploadFile.name || file.name);
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', serverUrl);
+                        xhr.setRequestHeader(
+                            'X-CSRF-TOKEN',
+                            document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        );
+
+                        xhr.upload.onprogress = (e) => {
+                            progress(e.lengthComputable, e.loaded, e.total);
+                        };
+
+                        xhr.onload = () => {
+                            if (xhr.status >= 200 && xhr.status < 300) {
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    load(response.path);
+                                } catch {
+                                    error('Invalid server response');
+                                }
+                            } else {
+                                error(xhr.responseText || 'Upload failed');
+                            }
+                        };
+
+                        xhr.onerror = () => error('Upload failed');
+                        xhr.send(data);
+
+                        return {
+                            abort: () => {
+                                xhr.abort();
+                                abort();
+                            },
+                        };
                     },
                 },
                 credits: false,
@@ -140,9 +199,17 @@ document.addEventListener('alpine:init', () => {
 
             this.pond = create(input, options);
 
+            // Constrain avatar to a square-ish width
+            if (dataset.avatar === 'true' && !this.multiple) {
+                this.pond.element.classList.add('filepond--avatar');
+            }
+
             // Apply grid layout for multiple files
             if (this.multiple && dataset.grid === 'true') {
                 this.pond.element.classList.add('filepond--grid');
+                if (dataset.columns) {
+                    this.pond.element.style.setProperty('--filepond-grid-cols', dataset.columns);
+                }
             }
 
             // Find parent form and block submit during upload
