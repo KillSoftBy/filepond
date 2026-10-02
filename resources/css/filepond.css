@@ -112,7 +112,7 @@
 .filepond--file-action-button:hover,
 .filepond--file-action-button:focus {
     background-color: var(--filepond-button-bg-hover);
-    box-shadow: 0 0 0 0.125em --alpha(var(--color-primary) / 0.2);
+    box-shadow: 0 0 0 0.125em color-mix(in srgb, var(--color-primary) 20%, transparent);
 }
 
 /* Remove button */
@@ -148,7 +148,7 @@
 [data-filepond-item-state='load-invalid'] .filepond--item-panel,
 [data-filepond-item-state*='error'] .filepond--item-panel,
 [data-filepond-item-state*='invalid'] .filepond--item-panel {
-    background-color: --alpha(var(--filepond-error-color) / 0.15);
+    background-color: color-mix(in srgb, var(--filepond-error-color) 15%, transparent);
 }
 
 [data-filepond-item-state='processing-error'] .filepond--file-info,
@@ -162,9 +162,9 @@
     color: var(--color-error-text);
 }
 
-/* Success states */
+/* Success states — keep the panel neutral, same as other items */
 [data-filepond-item-state='processing-complete'] .filepond--item-panel {
-    background-color: --alpha(var(--filepond-success-color) / 0.15);
+    background-color: var(--filepond-item-panel-bg);
 }
 
 [data-filepond-item-state='processing-complete'] .filepond--file-info,
@@ -172,17 +172,19 @@
     color: var(--color-success-text);
 }
 
-/* Image preview plugin */
+/* Image preview plugin — dark top-down gradient so file info stays readable
+   (plugin default: rgba(40,40,40,.85); success kept identical to idle so
+   freshly uploaded items look exactly like existing ones) */
 .filepond--image-preview-overlay-idle {
-    color: --alpha(var(--color-base-text) / 0.4);
+    color: rgb(40 40 40 / 0.85);
 }
 
 .filepond--image-preview-overlay-success {
-    color: --alpha(var(--filepond-success-color) / 0.4);
+    color: rgb(40 40 40 / 0.85);
 }
 
 .filepond--image-preview-overlay-failure {
-    color: --alpha(var(--filepond-error-color) / 0.4);
+    color: color-mix(in srgb, var(--filepond-error-color) 40%, transparent);
 }
 
 .filepond--image-preview-wrapper {
@@ -219,12 +221,6 @@
 
 .filepond--avatar .filepond--action-remove-item {
     margin-left: 2.75em;
-}
-
-/* Focus state */
-.filepond--root.filepond--hopper .filepond--panel-root {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 0.25rem --alpha(var(--color-primary) / 0.1);
 }
 
 /* Browse button wrapper */
@@ -267,7 +263,7 @@
 
 /* Limbo state (server file) */
 [data-filepond-item-state='limbo'] .filepond--item-panel {
-    background-color: --alpha(var(--filepond-success-color) / 0.1);
+    background-color: color-mix(in srgb, var(--filepond-success-color) 10%, transparent);
 }
 
 /* Grid layout for multiple files */
@@ -275,20 +271,22 @@
     overflow: visible;
 }
 
+/* !important: admin themes ship their own filepond grid rules (fixed 33%)
+   that load after this file — our dynamic column count must win */
 .filepond--grid .filepond--item {
-    width: calc(50% - 0.75rem);
+    width: calc(50% - 0.75rem) !important;
 }
 
 /* --filepond-grid-cols is set from data-columns (Filepond::gridColumns) */
 @media (min-width: 64rem) {
     .filepond--grid .filepond--item {
-        width: calc(100% / var(--filepond-grid-cols, 3) - 0.75rem);
+        width: calc(100% / var(--filepond-grid-cols, 4) - 0.75rem) !important;
     }
 }
 
 @media (max-width: 40rem) {
     .filepond--grid .filepond--item {
-        width: calc(100% - 0.5rem);
+        width: calc(100% - 0.5rem) !important;
     }
 }
 

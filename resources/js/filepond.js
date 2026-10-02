@@ -244,8 +244,35 @@ document.addEventListener('alpine:init', () => {
             // Apply grid layout for multiple files
             if (this.multiple && dataset.grid === 'true') {
                 this.pond.element.classList.add('filepond--grid');
-                if (dataset.columns) {
-                    this.pond.element.style.setProperty('--filepond-grid-cols', dataset.columns);
+                const cols = parseInt(dataset.columns, 10);
+                if (cols > 0) {
+                    // Admin themes can ship layered !important grid rules that
+                    // outrank ANY stylesheet rule we add (layers beat
+                    // specificity). Inline !important is the only declaration
+                    // that always wins. FilePond rewrites style.cssText as a
+                    // whole on every item update though, so re-apply whenever
+                    // the style attribute changes — the priority check keeps
+                    // the observer from looping on our own write.
+                    const mq = matchMedia('(min-width: 64rem)');
+                    const applyCols = () => {
+                        this.pond.element.querySelectorAll('.filepond--item').forEach((li) => {
+                            if (mq.matches) {
+                                if (li.style.getPropertyPriority('width') !== 'important') {
+                                    li.style.setProperty('width', `calc(100% / ${cols} - 0.75rem)`, 'important');
+                                }
+                            } else {
+                                li.style.removeProperty('width');
+                            }
+                        });
+                    };
+                    new MutationObserver(applyCols).observe(this.pond.element, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: ['style'],
+                    });
+                    mq.addEventListener('change', applyCols);
+                    applyCols();
                 }
             }
 
