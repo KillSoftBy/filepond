@@ -12,6 +12,22 @@ if (!customElements.get('markerjs-ui-annotation-editor')) {
 const dataUrlToBlob = (dataUrl) =>
     fetch(dataUrl).then((res) => res.blob());
 
+// FilePond draws the thumbnail from the unmodified item.file — swap the
+// rendered img src so the edit is visible without a page reload.
+// Two passes: FilePond's queued view writes (and the preview redraw after
+// the re-upload completes) would otherwise restore the old image.
+export const refreshThumbnail = (item, dataUrl) => {
+    if (!item) return;
+    const swap = () => {
+        const el = document.getElementById(`filepond--item-${item.id}`);
+        el?.querySelectorAll('img').forEach((img) => {
+            if (img.src !== dataUrl) img.src = dataUrl;
+        });
+    };
+    requestAnimationFrame(swap);
+    setTimeout(swap, 150);
+};
+
 /**
  * FilePond `imageEditEditor` adapter backed by marker.js 3 UI.
  *
@@ -24,12 +40,13 @@ const dataUrlToBlob = (dataUrl) =>
  * The rendered image is stored in a WeakMap keyed by the original File so
  * `server.process` can upload the annotated result instead of the original.
  */
-export function createMarkerEditor({ labels = {} } = {}) {
+export function createMarkerEditor({ labels = {}, instant = false } = {}) {
     const editedFiles = new WeakMap();
 
     let overlay = null;
     let editor = null;
     let currentFile = null;
+    let currentItem = null;
     let targetImg = null;
     let objectUrl = null;
 
@@ -72,9 +89,10 @@ export function createMarkerEditor({ labels = {} } = {}) {
     };
 
     const api = {
-        open(file, imageParameters, sourceUrl = null) {
+        open(file, imageParameters, sourceUrl = null, item = null) {
             ensureDom();
             currentFile = file;
+            currentItem = item;
 
             // `local` items have no Blob payload — edit the poster URL instead
             let src = sourceUrl;
@@ -122,13 +140,37 @@ export function createMarkerEditor({ labels = {} } = {}) {
                 if (hasMarkers) {
                     const dataUrl = await renderState(state);
                     const blob = await dataUrlToBlob(dataUrl);
-                    editedFiles.set(currentFile, blob);
-                }
 
-                // markup metadata lets the plugin pass state back on re-edit
-                api.onconfirm?.({ data: { markup: hasMarkers ? state : null } });
+                    const isLocalItem = typeof currentItem?.source === 'string';
+
+                    if (isLocalItem) {
+                        // already-uploaded file: keep it untouched and append
+                        // the edited render as a NEW pond item alongside it.
+                        // oncancel — NOT onconfirm — so the plugin never
+                        // setMetadata() on this item (that would re-upload
+                        // the stub file, which has no real data)
+                        api.onEditedCopy?.(blob, currentItem);
+                        api.oncancel?.();
+                    } else {
+                        editedFiles.set(currentFile, blob);
+
+                        // silent metadata — display-only, must NOT trigger re-upload
+                        currentItem?.setMetadata('editedPreview', dataUrl, true);
+                        refreshThumbnail(currentItem, dataUrl);
+
+                        // markup metadata lets the plugin pass state back on re-edit
+                        api.onconfirm?.({ data: { markup: state } });
+                    }
+                } else if (instant) {
+                    // editor opened automatically on add — keep the file, skip re-upload
+                    api.onconfirm?.({ data: {} });
+                } else {
+                    // nothing drawn → behave like cancel so the plugin doesn't
+                    // setMetadata and trigger a re-upload of a stub file
+                    api.oncancel?.();
+                }
             } catch {
-                api.onconfirm?.({ data: {} });
+                api.oncancel?.();
             } finally {
                 api.close();
             }

@@ -52,6 +52,10 @@ const closeZoom = () => {
 };
 
 const zoomSource = (item) => {
+    // prefer the edited render (set silently by the marker editor on save)
+    const edited = item.getMetadata('editedPreview');
+    if (edited) return edited;
+
     const poster = item.getMetadata('poster');
     if (poster) return poster;
 
@@ -91,6 +95,10 @@ export const FilePondPluginItemZoom = (_) => {
                 }
 
                 if (!query('GET_ALLOW_IMAGE_ZOOM')) return;
+
+                // DID_LOAD_ITEM re-fires on every metadata update (e.g. after
+                // editing an image) — don't stack duplicate zoom buttons
+                if (root.ref.buttonZoomItem) return;
 
                 const zoomable =
                     poster ||
