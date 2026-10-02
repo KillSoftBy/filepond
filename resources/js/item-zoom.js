@@ -72,7 +72,6 @@ export const FilePondPluginItemZoom = (_) => {
     addFilter('CREATE_VIEW', (viewAPI) => {
         const { is, view, query } = viewAPI;
 
-        if (!query('GET_ALLOW_IMAGE_ZOOM')) return;
         if (!is('file')) return;
 
         const routes = {
@@ -82,6 +81,16 @@ export const FilePondPluginItemZoom = (_) => {
 
                 const file = item.file;
                 const poster = item.getMetadata('poster');
+
+                // image-edit reveals its button only on DID_IMAGE_PREVIEW_SHOW,
+                // which never fires for poster (local) items — the button stays
+                // disabled (opacity < 1 → pointer-events:none). Reveal it manually.
+                // Registered after image-edit so root.ref.buttonEditItem exists.
+                if (poster && root.ref.buttonEditItem) {
+                    root.ref.buttonEditItem.opacity = 1;
+                }
+
+                if (!query('GET_ALLOW_IMAGE_ZOOM')) return;
 
                 const zoomable =
                     poster ||

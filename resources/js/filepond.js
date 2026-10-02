@@ -248,6 +248,15 @@ document.addEventListener('alpine:init', () => {
                 if (!error && file.serverId) {
                     this.uploadedInSession.add(file.serverId);
 
+                    // drop the stale value: for re-processed items the previous
+                    // serverId, for previously stored (local) items the source path
+                    const previous = itemValues.get(file.id) ?? file.source;
+                    if (previous && previous !== file.serverId) {
+                        this.files = this.files.filter((f) => f !== previous);
+                        this.uploadedInSession.delete(previous);
+                    }
+                    itemValues.set(file.id, file.serverId);
+
                     if (this.multiple) {
                         this.files.push(file.serverId);
                     } else {

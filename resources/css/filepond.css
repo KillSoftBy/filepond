@@ -279,9 +279,10 @@
     width: calc(50% - 0.75rem);
 }
 
+/* --filepond-grid-cols is set from data-columns (Filepond::gridColumns) */
 @media (min-width: 64rem) {
     .filepond--grid .filepond--item {
-        width: calc(33.333333% - 0.75rem);
+        width: calc(100% / var(--filepond-grid-cols, 3) - 0.75rem);
     }
 }
 
